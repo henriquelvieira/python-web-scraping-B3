@@ -2,4 +2,4 @@
 Web Scraping em Python para extração de dados do site da B3
 
 
-**https://imgur.com/lupRQJG**
+![alt text](https://imgur.com/lupRQJG)]
