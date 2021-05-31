@@ -13,7 +13,9 @@ def WebScraping(vURL, vBrowserDriver, vElementoXpathBusca):
     #Abertura do Navegador acessando a URL passada
     driver = webdriver.Chrome(chrome_options=options, executable_path=vBrowserDriver)
     driver.get(vURL)
-    driver.implicitly_wait(10)  # in seconds
+    
+    #Aguardar 15 segundos apos chamada da URL para garantir que a página esteja devidamente carregada
+    driver.implicitly_wait(15) 
    
     #Procurar o elemente atraves do xPath
     element = driver.find_element_by_xpath(vElementoXpathBusca)
@@ -32,6 +34,11 @@ def ParseHTML(vConteudo, vElemento, vClasse):
     #Pegar o conteudo da div conforme classe apontada
     return soup.find(vElemento, id=vClasse) 
 
+def GravaRetornoArquivo(vConteudoArquivo, vNomeArqui):
+    with open(vNomeArqui, 'w', encoding='utf-8') as vFile:
+        vConteudo = vConteudoArquivo
+        vFile.write(vConteudo)
+        vFile.close()
 
 #End Funções ###########################################################################################
 
@@ -42,13 +49,10 @@ vElementoXpathBusca = "//*[@id='conteudo-principal']/div[1]/div/div[1]/div"
 #Chamada da função para baixar o conteudo solicitado da URL informada
 vHTMLRetorno  = WebScraping(vURL, vBrowserDriver,  vElementoXpathBusca)
 
-
 #Armazena o resultado em um arquivo txt
-with open('return_v2.html', 'w', encoding='utf-8') as vFile:
-    vConteudo = vHTMLRetorno
-    vFile.write(vConteudo)
-    vFile.close()
-    
+GravaRetornoArquivo(vHTMLRetorno, 'return_v2.html') 
+
+
 print('------------------------------------------------------------')
 print('IBOVESPA: ' + ParseHTML(vHTMLRetorno, "div", "ibovPct").string)
 print('Pontos: ' + ParseHTML(vHTMLRetorno, "div", "ibovPts").string)
@@ -59,3 +63,4 @@ print('------------------------------------------------------------')
 
 print('Índice DI: ' + ParseHTML(vHTMLRetorno, "div", "indicePts").string + ' - ' + ParseHTML(vHTMLRetorno, "div", "indiceData").string)
 print('------------------------------------------------------------')
+
