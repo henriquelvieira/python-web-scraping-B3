@@ -3,8 +3,12 @@ import pandas as pd
 from bs4 import BeautifulSoup
 import requests
 import json
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+import smtplib
 
 # Funções ###################################################################################################
+
 
 def WebScraping(vURL, vBrowserDriver, vElementoXpathBusca):
     options = webdriver.ChromeOptions()
@@ -15,7 +19,7 @@ def WebScraping(vURL, vBrowserDriver, vElementoXpathBusca):
     driver.get(vURL)
     
     #Aguardar 15 segundos apos chamada da URL para garantir que a página esteja devidamente carregada
-    driver.implicitly_wait(15) 
+    driver.implicitly_wait(20) 
    
     #Procurar o elemente atraves do xPath
     element = driver.find_element_by_xpath(vElementoXpathBusca)
@@ -27,6 +31,7 @@ def WebScraping(vURL, vBrowserDriver, vElementoXpathBusca):
 
     return html_content 
 
+
 def ParseHTML(vConteudo, vElemento, vClasse):
     # Passagem do conteúdo para o BeautifulSoup para que seja possivel realizar a analise e limpeza 
     soup = BeautifulSoup(vConteudo, 'html.parser')
@@ -34,11 +39,35 @@ def ParseHTML(vConteudo, vElemento, vClasse):
     #Pegar o conteudo da div conforme classe apontada
     return soup.find(vElemento, id=vClasse) 
 
+
 def GravaRetornoArquivo(vConteudoArquivo, vNomeArqui):
     with open(vNomeArqui, 'w', encoding='utf-8') as vFile:
         vConteudo = vConteudoArquivo
         vFile.write(vConteudo)
         vFile.close()
+
+
+def EnviaEmail(vMensagem, vPara, vAssunto):
+    # Corpo da mensagem do email #
+    vEmail = MIMEMultipart()
+    
+    vPassword         = "*** SENHA DO EMAIL QUE IRÁ ENVIAR ***"
+    vEmail['From']    = "*** EMAIL QUE VAI ENVIAR ***"
+    vSMTP             = 'smtp.gmail.com'
+    vPorta            = 587   
+
+    vEmail['To']      = vPara
+    vEmail['Subject'] = vAssunto
+
+    vEmail.attach(MIMEText(vMensagem, 'plain'))
+
+    server = smtplib.SMTP(vSMTP, port = vPorta)
+    server.starttls()
+    server.login(vEmail['From'], vPassword)
+    server.sendmail(vEmail['From'], vEmail['To'], vEmail.as_string())
+    server.quit()
+
+
 
 #End Funções ###########################################################################################
 
@@ -53,6 +82,7 @@ vHTMLRetorno  = WebScraping(vURL, vBrowserDriver,  vElementoXpathBusca)
 GravaRetornoArquivo(vHTMLRetorno, 'return_v2.html') 
 
 
+
 print('------------------------------------------------------------')
 print('IBOVESPA: ' + ParseHTML(vHTMLRetorno, "div", "ibovPct").string)
 print('Pontos: ' + ParseHTML(vHTMLRetorno, "div", "ibovPts").string)
@@ -64,3 +94,5 @@ print('------------------------------------------------------------')
 print('Índice DI: ' + ParseHTML(vHTMLRetorno, "div", "indicePts").string + ' - ' + ParseHTML(vHTMLRetorno, "div", "indiceData").string)
 print('------------------------------------------------------------')
 
+
+EnviaEmail('Teste', 'EMAIL_DESTINO@EMAIL.COM', 'Dados B3')
